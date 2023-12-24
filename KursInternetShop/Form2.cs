@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using TestForm;
 
 namespace KursInternetShop
 {
@@ -64,9 +65,8 @@ namespace KursInternetShop
 
             if (aut.isUserAutorized(user))   
             {
-                Form1 menu = new Form1();
-                //menu.FileName = aut.models[user.Role];
-                menu.Show();
+                Form1 formm = new Form1();
+                formm.Show();
                 //this.Hide();
             } else
             {

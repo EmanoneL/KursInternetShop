@@ -10,4 +10,10 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.7" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="TestForm">
+      <HintPath>bin\Debug\net5.0-windows\ref\TestForm.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

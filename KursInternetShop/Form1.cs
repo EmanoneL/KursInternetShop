@@ -7,16 +7,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using TestForm;
 /*
 namespace ProgLab2
 {
-    public partial class Form1 : Form
-    {
-        public Form1()
-        {
-            InitializeComponent();
-        }
-    }
+public partial class Form1 : Form
+{
+public Form1()
+{
+InitializeComponent();
+}
+}
 }*/
 namespace KursInternetShop
 {
@@ -28,6 +29,8 @@ namespace KursInternetShop
         {
             //this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             InitializeComponent();
+            //MyForm test = new TestForm.MyForm();
+
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -36,7 +39,7 @@ namespace KursInternetShop
             //    return;
 
             //MenuBulder menuBulder = new MenuBulder(openFileDialog1.FileName, this);
-            MenuBulder menuBulder = new MenuBulder(FileName, this);
+            MenuBuilderFromDB menuBulder = new MenuBuilderFromDB(this);
         }
 
         public void FirstMethod(object sender, EventArgs e)
