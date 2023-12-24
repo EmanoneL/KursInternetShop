@@ -13,22 +13,23 @@ namespace KursInternetShop
     {
         Form1 form;
         ToolStrip Root = new ToolStrip();//корень дерева в иерархии - полоска меню
+        ToolStripItemCollection root = null;
 
         public MenuBuilderFromDB(Form1 form)
         {
             this.form = form;
 
-            getBasicMenuData();
+            getBasicMenuData(root, 0);
 
             form.Controls.Add(Root);
         }
 
-        private void getBasicMenuData()
+        private void getBasicMenuData(ToolStripItemCollection items, int parentId)
         {
             string connectionString = "Data Source=handmade shop system.db";
-            string sqlExpression = "SELECT * FROM menu WHERE parent_id = 0 and orders ORDER BY orders;";
+            string sqlExpression = "SELECT * FROM menu WHERE parent_id = " + parentId+" and orders ORDER BY orders;";
 
-            ToolStripDropDownButton root = null;
+            
 
             using (var connection = new SqliteConnection(connectionString))
             {
@@ -42,16 +43,26 @@ namespace KursInternetShop
                         while (reader.Read())   // построчно считываем данные
                         {   
 
-                            var item_id = Convert.ToString(reader.GetValue(0));
+                            var item_id = Convert.ToInt32(reader.GetValue(0));
                             var item_name = Convert.ToString(reader.GetValue(2));
 
-                            ToolStripDropDownButton control = new ToolStripDropDownButton();
+                            ToolStripDropDownItem item;
 
-                            control.Size = new System.Drawing.Size(80, 22);
+                            if (parentId == 0)
+                            {
+                                item = new ToolStripDropDownButton(item_name);
+                                Root.Items.Add(item);
+                            }
+                            else
+                            {
+                                item = new ToolStripMenuItem(item_name);
+                                items.Add(item);
+                            }
+
+                            
 
 
-                            control.Text = item_name;
-                            Root.Items.Add(control);
+                            getBasicMenuData(item.DropDownItems, item_id);
 
 
                             //// Получаем дочерние пункты меню
