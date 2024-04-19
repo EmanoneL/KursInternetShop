@@ -66,10 +66,10 @@ namespace KursInternetShop
                 }
 
                 //прикручиваем вызываемый метод
-                if (str[3].Trim() == "FirstMethod")
-                    control.Click += form.FirstMethod;
+                //if (str[3].Trim() == "FirstMethod")
+                    //control.Click += form.FirstMethod;
 
-                else if (str[3].Trim() == "SecondMethod")
+                if (str[3].Trim() == "SecondMethod")
                     control.Click += form.SecondMethod;
 
                 else if (str[3].Trim() == "ThirdMethod")

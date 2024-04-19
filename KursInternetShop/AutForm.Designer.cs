@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace KursInternetShop
 {
-    partial class Form2
+    partial class AutForm
     {
         /// <summary>
         /// Required designer variable.

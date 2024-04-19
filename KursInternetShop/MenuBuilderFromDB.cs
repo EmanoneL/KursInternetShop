@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -14,145 +15,155 @@ namespace KursInternetShop
         Form1 form;
         ToolStrip Root = new ToolStrip();//корень дерева в иерархии - полоска меню
         ToolStripItemCollection root = null;
+        User curUser = new User("admin", "admin");
+        //DB.DB db = new DB.DB();
 
-        public MenuBuilderFromDB(Form1 form)
+        //User curUser;
+
+        public MenuBuilderFromDB(Form1 form, User user)
         {
             this.form = form;
-
+            //curUser = user;
+            //connectDB();
             getBasicMenuData(root, 0);
+            checkUserAccess();
 
             form.Controls.Add(Root);
-        }
-
-        private void getBasicMenuData(ToolStripItemCollection items, int parentId)
-        {
-            string connectionString = "Data Source=handmade shop system.db";
-            string sqlExpression = "SELECT * FROM menu WHERE parent_id = " + parentId+" and orders ORDER BY orders;";
 
             
+        }
 
-            using (var connection = new SqliteConnection(connectionString))
-            {
-                connection.Open();
+        private MethodInfo getFunctionByName(string dllName, string functionName)
+        {
+            // Загрузка DLL
+            Assembly assembly = Assembly.LoadFrom(dllName);
 
-                SqliteCommand command = new SqliteCommand(sqlExpression, connection);
-                using (SqliteDataReader reader = command.ExecuteReader())
+            // Получение типа
+            Type type = assembly.GetType(dllName+".Form1");
+
+            // Создание экземпляра объекта (если функция не статическая)
+            object instance = Activator.CreateInstance(type);
+
+            // Получение метода
+            MethodInfo method = type.GetMethod(functionName);
+            //method.Invoke(instance, null);
+
+            return method;
+
+        }
+
+        private void addFunctionToButton(ToolStripDropDownItem item, string dllName, string functionName)
+        {
+
+            Action action = (Action)Delegate.CreateDelegate(typeof(Action), null, getFunctionByName(dllName, functionName));
+
+            item.Click += (sender, e) => action();
+        }
+        private void getBasicMenuData(ToolStripItemCollection items, int parentId)
+        {
+
+            DB.DB db = new DB.DB();
+            SqliteDataReader reader = db.SELECT(FROM:"menu", WHERE: "parent_id = " + parentId + " and orders", ORDERBY:"orders");
+
+                if (reader.HasRows) // если есть данные
                 {
-                    if (reader.HasRows) // если есть данные
-                    {
-                        while (reader.Read())   // построчно считываем данные
-                        {   
+                    while (reader.Read())   // построчно считываем данные
+                    {   
 
-                            var item_id = Convert.ToInt32(reader.GetValue(0));
-                            var item_name = Convert.ToString(reader.GetValue(2));
-
-                            ToolStripDropDownItem item;
-
-                            if (parentId == 0)
-                            {
-                                item = new ToolStripDropDownButton(item_name);
-                                Root.Items.Add(item);
-                            }
-                            else
-                            {
-                                item = new ToolStripMenuItem(item_name);
-                                items.Add(item);
-                            }
-
-                            
+                        var item_id = Convert.ToInt32(reader.GetValue(0));
+                        var item_name = Convert.ToString(reader.GetValue(2));
+                        string dllName = Convert.ToString(reader.GetValue(3));
+                        string functionName = Convert.ToString(reader.GetValue(4));
 
 
-                            getBasicMenuData(item.DropDownItems, item_id);
+                    ToolStripDropDownItem item;
 
+                        if (parentId == 0)
+                        {
+                            item = new ToolStripDropDownButton(item_name);
+                                
 
-                            //// Получаем дочерние пункты меню
-                            //sqlExpression = "SELECT * FROM menu WHERE parent_id = "+item_id+ "and orders ORDER BY orders;";
-                            //command = new SqliteCommand(sqlExpression, connection);
-
-                            //if (reader.HasRows)
-                            //{
-                            //    control.DropDownItems.Add(control);
-                            //}
+                            Root.Items.Add(item);
                         }
+                        else
+                        {
+                            item = new ToolStripMenuItem(item_name);
+                            items.Add(item);
+                        }
+
+                        if (functionName != "")
+                        {
+                            addFunctionToButton(item, dllName, functionName);
+
+                        }
+
+                        getBasicMenuData(item.DropDownItems, item_id);
+                  
                     }
+                
+
                 }
+            db.Close();
+
+        }
+
+        private void checkUserAccess()
+        {
+            foreach (ToolStripItem item in Root.Items)
+            {
+                if (!hasAccess(curUser, item))
+                {
+                    item.Visible = false;
+                }                
 
             }
         }
-        //private int Build(int level = 0, ToolStripDropDownButton root = null, int index = 0)
-        //{
-        //    //ЕСЛИ ЭЛЕМЕНТ В УЗЛЕ ИЕРАРХИИ - ТО ПОСЛЕ СТАТУСА ПРОБЕЛ И ВМЕСТО МЕТОДА ТОЖЕ ПРОБЕЛ!!!            
-        //    int i = index;
-        //    for (; i < Lines.Length; i++)
-        //    {
-        //        ToolStripDropDownButton control = new ToolStripDropDownButton();
 
-        //        control.Size = new System.Drawing.Size(80, 22);
+        private bool hasAccess(User curUser, ToolStripItem item)
+        {
 
-        //        // Разделение строк на слова для извлечения параметров элемента управления
-        //        string[] str = Lines[i].Split(' ');
+            //string sqlExpression = @"SELECT menu_item,
+            //                            CASE
+            //                                WHEN rd = 0 AND write = 0 AND edit = 0 AND del = 0 THEN 0
+            //                                ELSE 1
+            //                            END AS has_access
+            //                        FROM rights
+            //                        WHERE user = '"+curUser.Name+"';";
 
-        //        control.Text = str[1];
 
-        //        //задаем видимость и доступность согласно статусу в файле
-        //        try
-        //        {
-        //            if (Convert.ToInt32(str[2]) == 0)
-        //            {
-        //                control.Visible = true;
-        //                control.Enabled = true;
-        //            }
-        //            else if (Convert.ToInt32(str[2]) == 1)
-        //            {
-        //                control.Visible = true;
-        //                control.Enabled = false;
-        //            }
-        //            else if (Convert.ToInt32(str[2]) == 2)
-        //            {
-        //                control.Visible = false;
-        //                control.Enabled = false;
-        //            }
-        //        }
-        //        catch
-        //        {
-        //            return -1;
-        //        }
+            string sqlExpression = @"SELECT item_name, 
+                                        CASE
+	                                        WHEN rd = 0 AND write = 0 AND edit = 0 AND del = 0 THEN 0
+	                                        ELSE 1
+                                        END AS has_access
+                                        FROM 
+                                        (SELECT login, item_name, rd, write, edit, del
+                                        FROM rights 
+                                        JOIN users ON user_id = users.id
+                                        JOIN menu ON rights.menu_item_id = menu.menu_item_id) as access
+                                        WHERE login='" + curUser.Name + "';";
+            DB.DB db = new DB.DB();
+            SqliteDataReader reader = db.SELECT(sqlExpression);
+                if (reader.HasRows) // если есть данные
+                {
+                    while (reader.Read())   // построчно считываем данные
+                    {
+                        var item_name = Convert.ToString(reader.GetValue(0));
+                        var item_access = Convert.ToBoolean(reader.GetValue(1));
 
-        //        //прикручиваем вызываемый метод
-        //        if (str[3].Trim() == "FirstMethod")
-        //            control.Click += form.FirstMethod;
+                        if (item_name == item.Text)
+                        {
+                            db.Close();
+                            return item_access;
+                        }
+                    }
+                db.Close();
+                } 
+                return true;
+            
+        }
 
-        //        else if (str[3].Trim() == "SecondMethod")
-        //            control.Click += form.SecondMethod;
-
-        //        else if (str[3].Trim() == "ThirdMethod")
-        //            control.Click += form.ThirdMethod;
-
-        //        if (level == 0)//добавляем в самый корень если уровень == 0
-        //            Root.Items.Add(control);
-
-        //        else if (level == Convert.ToInt32(str[0])) //если мы на нужном уровне добавляем в имеющийся корень
-        //            root.DropDownItems.Add(control);
-
-        //        if (i + 1 != Lines.Length)
-        //        {
-        //            //если уровень следующего элемента больше - рекурсивный вызов с повышением индекса и уровня
-        //            if (Convert.ToInt32(Lines[i + 1].Split(' ')[0]) > level && level == Convert.ToInt32(str[0]))
-        //            {
-        //                i = Build(level + 1, control, i + 1);
-
-        //            }
-        //            if (Convert.ToInt32(Lines[i + 1].Split(' ')[0]) < level && level == Convert.ToInt32(str[0]))
-        //            {//выходим из рекурсии, уровень понижается так как спускаемся обратно по иерархии
-        //                level--;
-        //                return i;
-        //            }
-        //        }
-        //        else return i;
-        //    }
-        //    return i;
-        //}
-
+        
     }
 }
 

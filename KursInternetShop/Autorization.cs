@@ -8,10 +8,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KursInternetShop
 {
-    class User
+    public class User
     {
         public string Name { get; set; }
         public string Password { get; set; }
+
+        public bool shootChangePassword { get; set; } = false;
 
         public User(string n, string p)
         {
@@ -23,26 +25,9 @@ namespace KursInternetShop
 
     class Autorization
     {
-        string FilePath = "Users.txt";
+        //DB.DB db = new DB.DB();
         List<User> AutorizedUsers = new List<User> { };
 
-        public Dictionary<string, string> models = new Dictionary<string, string>()
-        {
-            { "admin", "C:\\Users\\Ekaterina\\source\\repos\\ProgLab2\\AdminMenu.txt"},
-            { "user", "C:\\Users\\Ekaterina\\source\\repos\\ProgLab2\\MenuBulder.txt"}
-        };
-
-        //
-        public static string CreateMD5(string input)
-        {
-            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
-            {
-                byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
-                byte[] hashBytes = md5.ComputeHash(inputBytes);
-
-                return Convert.ToHexString(hashBytes);
-            }
-        }
         public bool isUserAutorized(User user)
         {
             foreach (User us in AutorizedUsers)
@@ -55,7 +40,7 @@ namespace KursInternetShop
 
         private bool checkAutorize(User CheckUser, User AutorizeUser)
         {
-            string hashPassword = CreateMD5(CheckUser.Password).ToLower();
+            string hashPassword = DB.DB.CreateMD5(CheckUser.Password).ToLower();
             if ((CheckUser.Name == AutorizeUser.Name) && (hashPassword == AutorizeUser.Password)) return true;
             return false;
         }
@@ -63,29 +48,18 @@ namespace KursInternetShop
         // Считываем зарегестрированных пользователей из БД
         private void readAutorizeDocument()
         {
-            string connectionString = "Data Source=handmade shop system.db";
-            string sqlExpression = "SELECT * FROM users";
-
-            using (var connection = new SqliteConnection(connectionString))
+            DB.DB db = new DB.DB();
+            SqliteDataReader reader = db.SELECT(FROM:"users");
+            if (reader.HasRows) // если есть данные
             {
-                connection.Open();
-
-                SqliteCommand command = new SqliteCommand(sqlExpression, connection);
-                using (SqliteDataReader reader = command.ExecuteReader())
+                while (reader.Read())   // построчно считываем данные
                 {
-                    if (reader.HasRows) // если есть данные
-                    {
-                        while (reader.Read())   // построчно считываем данные
-                        {
-                            var name = Convert.ToString(reader.GetValue(1));
-                            var password = Convert.ToString(reader.GetValue(2));
-                            AutorizedUsers.Add(new User(name, password));
-                        }
-                    }
+                    var name = Convert.ToString(reader.GetValue(1));
+                    var password = Convert.ToString(reader.GetValue(2));
+                    AutorizedUsers.Add(new User(name, password));
                 }
-
             }
-
+            db.Close();
         }
 
         public Autorization()

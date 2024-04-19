@@ -19,21 +19,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="System.Data.Entity.Repository" Version="2.0.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\AdminPanel\AdminPanel.csproj" />
-    <ProjectReference Include="..\DB\DB.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="ClassLibrary1">
-      <HintPath>bin\Debug\net5.0-windows\ClassLibrary1.dll</HintPath>
-    </Reference>
-    <Reference Include="TestForm">
-      <HintPath>bin\Debug\net5.0-windows\ref\TestForm.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

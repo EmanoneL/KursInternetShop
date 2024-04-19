@@ -13,10 +13,10 @@ using TestForm;
 namespace KursInternetShop
 {
     
-    public partial class Form2 : Form
+    public partial class AutForm : Form
     {
 
-        public Form2()
+        public AutForm()
         {
             InitializeComponent();
             KeyPreview = true;
@@ -57,6 +57,7 @@ namespace KursInternetShop
         private void button1_Click(object sender, EventArgs e)
         {
 
+
             string name = textBox1.Text;
             string password = textBox2.Text;
             User user = new User(name, password);  //класс пользователя
@@ -66,6 +67,7 @@ namespace KursInternetShop
             if (aut.isUserAutorized(user))   
             {
                 Form1 formm = new Form1();
+                formm.SetUser(user);
                 formm.Show();
                 //this.Hide();
             } else
