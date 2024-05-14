@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.Data.Sqlite;
 using SQLitePCL;
-using Microsoft.Data.Sqlite;
+using System;
 using System.Data;
 using System.Linq;
 
@@ -8,7 +8,7 @@ namespace DB
 {
     public class DB
     {
-        public static string dataBaseName { get; }= @"C:\Users\Ekaterina\source\repos\KursInternetShop\DB\bin\Debug\net5.0\handmade shop system.db";
+        public static string dataBaseName { get; } = @"handmade shop system.db";
 
         SqliteConnection connection;
 
@@ -44,11 +44,11 @@ namespace DB
             return sqlExpression;
         }
 
-         public SqliteDataReader SELECT(string values="*", string FROM="Bank", string WHERE="", string ORDERBY="")
+        public SqliteDataReader SELECT(string values = "*", string FROM = "Bank", string WHERE = "", string ORDERBY = "")
         {
-            
+
             //connection.Open();
-            string sqlExpression = generateSELECTcommand(values,FROM,WHERE, ORDERBY);
+            string sqlExpression = generateSELECTcommand(values, FROM, WHERE, ORDERBY);
             SqliteCommand command = new SqliteCommand(sqlExpression, connection);
             SqliteDataReader reader = command.ExecuteReader();
             //connection.Close();
@@ -86,7 +86,7 @@ namespace DB
                     insertSQL.Parameters.AddWithValue($"@param{i}", VALUES[i]);
                 }
                 insertSQL.ExecuteNonQuery();
-                
+
             }
             //connection.Close();
         }
@@ -99,11 +99,11 @@ namespace DB
             return exp;
 
         }
-        public void DELETE(string FROM, string WHERE="")
+        public void DELETE(string FROM, string WHERE = "")
         {
             //connection.Open();
             string sqlExpression = generateDELETEcommand(FROM, WHERE);
-            SqliteCommand deleteSQL = new SqliteCommand(sqlExpression, connection); 
+            SqliteCommand deleteSQL = new SqliteCommand(sqlExpression, connection);
             deleteSQL.ExecuteNonQuery();
             //connection.Close();
         }

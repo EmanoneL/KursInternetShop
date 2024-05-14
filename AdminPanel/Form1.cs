@@ -1,6 +1,8 @@
-﻿using System;
+﻿using MenuItemConstruction;
+using Microsoft.Data.Sqlite;
+using System;
+using System.Data;
 using System.Windows.Forms;
-using MenuItemConstruction;
 
 namespace AdminPanel
 {
@@ -11,21 +13,48 @@ namespace AdminPanel
         string table = "users";
         string[] colomns = { "id", "login", "password" };
 
-        public Form1()
+        public Form1(DB.Right currentUserRight)
         {
-            InitializeComponent();
+            InitializeComponent(); ;
+            this.Name = "Admin Panel";
+            if (currentUserRight != null)
+            {
+                if (currentUserRight.Rd == 0)
+                {
+                    dataGridView1.Visible = false;
+                    button3.Visible = false;
+
+                }
+
+                if (currentUserRight.Write == 0)
+                {
+                    button1.Visible = false;
+                }
+
+                if (currentUserRight.Edit == 0)
+                {
+                    dataGridView1.ReadOnly = true;
+                    button3.Visible = false;
+                }
+
+                if (currentUserRight.Del == 0)
+                {
+                    button2.Visible = false;
+                }
+            }
+
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            MenuItemSettings.fillDataGrid(dataGridView1, $"{colomns[0]}, {colomns[1]}", table, ORDERBY:"id");
-
+            dataGridView1.DataSource = MenuItemSettings.fillDataGrid(dataGridView1, $"{colomns[0]}, {colomns[1]}", table, ORDERBY: "id");
+            dataGridView1.Columns["id"].ReadOnly = true;
         }
 
         public void freshDataGrid()
         {
             dataGridView1.DataSource = null;
-            MenuItemSettings.fillDataGrid(dataGridView1, $"{colomns[0]}, {colomns[1]}", table, ORDERBY: "id");
+            dataGridView1.DataSource = MenuItemSettings.fillDataGrid(dataGridView1, $"{colomns[0]}, {colomns[1]}", table, ORDERBY: "id");
         }
 
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -45,22 +74,22 @@ namespace AdminPanel
             this.BeginInvoke(new MethodInvoker(() =>
             {
                 try
-            {
-                if (e.RowIndex >= 0 && e.ColumnIndex >= 0)
                 {
+                    if (e.RowIndex >= 0 && e.ColumnIndex >= 1)
+                    {
 
-                    string edtCellValue = dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
-                    DB.DB db = new DB.DB();
-                    db.UPDATE(table, $"{edtColomn} = '{edtCellValue}'", $"{colomns[0]} = {selectedUserID}");
+                        string edtCellValue = dataGridView1.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString();
+                        DB.DB db = new DB.DB();
+                        db.UPDATE(table, $"{edtColomn} = '{edtCellValue}'", $"{colomns[0]} = {selectedUserID}");
                         db.Close();
 
+                    }
                 }
-            }
-            catch
-            {
-                MessageBox.Show("Ошибка при редактировании");
-            }
-            freshDataGrid();
+                catch
+                {
+                    MessageBox.Show("Ошибка при редактировании");
+                }
+                freshDataGrid();
             }));
         }
 
@@ -103,9 +132,9 @@ namespace AdminPanel
             //freshDataGrid();
         }
 
-        public static void ShowForm()
+        public static void ShowForm(DB.Right rights)
         {
-            Form1 form = new Form1();
+            Form1 form = new Form1(rights);
             form.Show();
         }
 

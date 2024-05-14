@@ -1,20 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using TestForm;
 
 namespace KursInternetShop
 {
-    
+
     public partial class AutForm : Form
     {
+        ErrorProvider errorProvider = new ErrorProvider();
 
         public AutForm()
         {
@@ -52,27 +44,54 @@ namespace KursInternetShop
             this.label6.Text = string.Format("CapsLock: {1}", layout, capsLock ? "On" : "Off");
         }
 
+        private bool IsValidInput()
+        {
+            bool isValid = true;
+            errorProvider.Clear();
 
+            if (string.IsNullOrWhiteSpace(textBox1.Text))
+            {
+                errorProvider.SetError(textBox1, "Введите логин");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(textBox2.Text))
+            {
+                errorProvider.SetError(textBox2, "Введите пароль");
+                return false;
+            }
+
+
+            return isValid;
+        }
 
         private void button1_Click(object sender, EventArgs e)
         {
-
-
-            string name = textBox1.Text;
-            string password = textBox2.Text;
-            User user = new User(name, password);  //класс пользователя
-
-            Autorization aut = new Autorization(); 
-
-            if (aut.isUserAutorized(user))   
+            if (IsValidInput())
             {
-                Form1 formm = new Form1();
-                formm.SetUser(user);
-                formm.Show();
-                //this.Hide();
-            } else
-            {
-                MessageBox.Show("Пользователя с такими данными нет");
+                DB.HandmadeShopSystemContext _context = new();
+                var user = new DB.User
+                {
+                    Login = textBox1.Text,
+                    Password = DB.DB.CreateMD5(textBox2.Text)
+                };
+
+
+                Autorization aut = new Autorization();
+                var autUser = aut.getUserAutorized(user);
+
+                if (autUser != null)
+                {
+                    Form1 formm = new Form1();
+                    formm.SetUser(autUser);
+                    //_context.Users.Find("seller2");
+                    formm.Show();
+                    this.Hide();
+                }
+                else
+                {
+                    MessageBox.Show("Пользователя с такими данными нет");
+                }
             }
         }
 

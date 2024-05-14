@@ -1,45 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using DB;
 using Microsoft.Data.Sqlite;
+using System;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace AdminPanel
 {
     public partial class InsertForm : Form
     {
-
+        private readonly DB.HandmadeShopSystemContext _context = new();
         string table = "users";
         string[] colomns = { "login", "password" };
+
         public InsertForm()
         {
             InitializeComponent();
+            this.Name = "InsertForm";
         }
 
         private void insertIntoTable()
         {
-            
-            DB.DB db = new DB.DB();
-            string[] values = { textBox1.Text,DB.DB.CreateMD5(textBox2.Text)};
-            db.INSERT(table, colomns, values);
-            db.Close();
+            var user = new User
+            {
+                Login = textBox1.Text,
+                Password = DB.DB.CreateMD5(textBox2.Text),
+                ChangePassword = checkBox1.Checked.ToString(),
+            };
+
+            _context.Users.Add(user);
+            _context.SaveChanges();
 
         }
 
         private string getUserId(DB.DB db)
         {
-            string ueId="";
-            SqliteDataReader readerUser = db.SELECT(values: "id", FROM: "users", WHERE: $"login='{textBox1.Text}'");
-
-            if (readerUser.Read())
-            {
-                ueId = Convert.ToString(readerUser.GetInt32(0));
-            }
+            string ueId = _context.Users.FirstOrDefault(p => p.Login == textBox1.Text).Id.ToString();
             return ueId;
         }
         private void giveBasicRights()
@@ -77,12 +72,12 @@ namespace AdminPanel
             }
             else
             {
-                insertIntoTable();
-                giveBasicRights();
-                Close();
+
                 try
                 {
-                    
+                    insertIntoTable();
+                    giveBasicRights();
+                    Close();
                 }
                 catch
                 {

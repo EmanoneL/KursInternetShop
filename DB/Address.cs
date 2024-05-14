@@ -1,8 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace DB;
-
+public class AddressDisplayItem
+{
+    public int Id { get; set; }
+    public string AddressString { get; set; }
+}
 public partial class Address
 {
     public int IdAddress { get; set; }

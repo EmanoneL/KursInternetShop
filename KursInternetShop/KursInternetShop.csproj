@@ -23,8 +23,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Addreses\Addreses.csproj" />
     <ProjectReference Include="..\AdminPanel\AdminPanel.csproj" />
+    <ProjectReference Include="..\Cart\Cart.csproj" />
+    <ProjectReference Include="..\Comments\Comments.csproj" />
+    <ProjectReference Include="..\Customer\Customer.csproj" />
     <ProjectReference Include="..\DB\DB.csproj" />
+    <ProjectReference Include="..\Directory\Directory.csproj" />
+    <ProjectReference Include="..\Documents\Documents.csproj" />
+    <ProjectReference Include="..\Order\Order.csproj" />
+    <ProjectReference Include="..\Products\Products.csproj" />
+    <ProjectReference Include="..\Reference\Reference.csproj" />
+    <ProjectReference Include="..\Sellers\Sellers.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,6 +44,21 @@
     <Reference Include="TestForm">
       <HintPath>bin\Debug\net5.0-windows\ref\TestForm.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using MenuItemConstruction;
+﻿using MenuItemConstruction;
 using Microsoft.Data.Sqlite;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace AdminPanel
 {
@@ -63,7 +57,7 @@ namespace AdminPanel
         private void LoadComboBox()
         {
             DB.DB db = new DB.DB();
-            SqliteDataReader reader = db.SELECT(values:"item_name", FROM:"menu");
+            SqliteDataReader reader = db.SELECT(values: "item_name", FROM: "menu");
             while (reader.Read())
             {
                 comboBox1.Items.Add(reader["item_name"].ToString());
@@ -122,14 +116,14 @@ namespace AdminPanel
                         JOIN users ON user_id = users.id
                         JOIN menu ON rights.menu_item_id = menu.menu_item_id
                         WHERE item_name='" + comboBox1.Text + "';";
-            
+
             dataGridView1.DataSource = null;
-            MenuItemSettings.fillDataGrid(dataGridView1,sqlex);
+            MenuItemSettings.fillDataGrid(dataGridView1, sqlex);
         }
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             freshDataGrid();
-            
+
         }
 
 

@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DB\DB.csproj" />
     <ProjectReference Include="..\MenuItemConstruction\MenuItemConstruction.csproj" />
   </ItemGroup>
 

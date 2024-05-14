@@ -1,14 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MenuItemConstruction
 {
-        //ErrorProvider errorProvider1 = new ErrorProvider();
+    //ErrorProvider errorProvider1 = new ErrorProvider();
     public class InsertFormInitializer
     {
         string table = "users";
@@ -126,14 +123,14 @@ namespace MenuItemConstruction
         }
     }
 }
-        
 
-        //private void Form_FormClosed(object sender, FormClosedEventArgs e)
-        //{
-        //    Form1 form1 = Application.OpenForms.OfType<Form1>().FirstOrDefault();
-        //    if (form1 != null)
-        //    {
-        //        form1.freshDataGrid();
-        //    }
-        //}
+
+//private void Form_FormClosed(object sender, FormClosedEventArgs e)
+//{
+//    Form1 form1 = Application.OpenForms.OfType<Form1>().FirstOrDefault();
+//    if (form1 != null)
+//    {
+//        form1.freshDataGrid();
+//    }
+//}
 

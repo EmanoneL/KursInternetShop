@@ -1,15 +1,8 @@
 ﻿using DB;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Products
 {
@@ -23,7 +16,7 @@ namespace Products
             InitializeComponent();
             base.LoadComboBoxes();
             _product = product ?? throw new ArgumentNullException(nameof(product));
-            _context = new(); 
+            _context = new();
             InitializeForm();
         }
 
@@ -36,11 +29,13 @@ namespace Products
             costTextBox.Text = _product.Cost.ToString();
             statusComboBox.SelectedItem = _product.Status;
             pictureBox.Image = ConvertByteArrayToImage(_product.Picture);
-            categoryComboBox.SelectedItem = (_product.IdCategory)-1;
-            sellerComboBox.SelectedIndex = (_product.IdSellers)-1;
-            storageComboBox.SelectedIndex = (_product.IdStorages)-1;
 
-           
+            //pictureBox.Image = _product.Picture;
+            categoryComboBox.SelectedIndex = (_product.IdCategory) - 1;
+            sellerComboBox.SelectedIndex = (_product.IdSellers) - 1;
+            storageComboBox.SelectedIndex = (_product.IdStorages) - 1;
+
+
             this.Text = "Edit Product";
 
             // Кнопки
@@ -63,39 +58,16 @@ namespace Products
             _product.IdStorages = selectedStorageId;
             _product.Status = statusComboBox.SelectedItem.ToString();
 
-            _context.Update(_product); 
-            _context.SaveChanges(); 
+            _context.Update(_product);
+            _context.SaveChanges();
             MessageBox.Show("Product updated successfully!");
             this.Close();
         }
 
-        protected Image ConvertByteArrayToImage(byte[] byteArray)
+        protected Bitmap ConvertByteArrayToImage(byte[] byteArray)
         {
-            if (byteArray == null || byteArray.Length == 0)
-            {
-                return null;
-            }
-
-            try
-            {
-                using (MemoryStream ms = new MemoryStream(byteArray))
-                {
-                    Image image = Image.FromStream(ms);
-                    return image;
-                }
-            }
-            catch (ArgumentException ex)
-            {
-                // Неверный формат изображения или поврежденные данные
-                Console.WriteLine($"An error occurred: {ex.Message}");
-                return null;
-            }
-            catch (Exception ex)
-            {
-                // Обработка других исключений
-                Console.WriteLine($"An error occurred: {ex.Message}");
-                return null;
-            }
+            Bitmap image = new Bitmap(Image.FromStream(new MemoryStream(_product.Picture)));
+            return image;
         }
     }
 }

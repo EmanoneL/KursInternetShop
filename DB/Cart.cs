@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace DB;
 
@@ -14,4 +13,7 @@ public partial class Cart
     public int? Cost { get; set; }
 
     public virtual Customer IdCustomersNavigation { get; set; }
+
+    public List<Product> Products { get; set; } = new();
+    public virtual ICollection<CartsHasProsucts> CartsHasProducts { get; set; }
 }

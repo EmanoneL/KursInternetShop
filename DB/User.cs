@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace DB;
+﻿namespace DB;
 
 public partial class User
 {
@@ -10,4 +7,5 @@ public partial class User
     public string Login { get; set; }
 
     public string Password { get; set; }
+    public string ChangePassword { get; set; }
 }

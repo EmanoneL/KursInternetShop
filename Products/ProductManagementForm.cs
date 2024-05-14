@@ -1,13 +1,9 @@
 ﻿using DB;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using Microsoft.EntityFrameworkCore;
 using System.Drawing;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Products
@@ -16,12 +12,17 @@ namespace Products
     {
         private readonly DB.HandmadeShopSystemContext _context;
         private BindingSource bindingSource;
+        private Right currentUserRight { get; set; }
 
-        public ProductManagementForm()
+        public ProductManagementForm(Right currentUserRight)
         {
+            this.currentUserRight = currentUserRight;
             InitializeComponent();
-            _context = new(); 
+            _context = new();
             InitializeForm();
+            dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
+            dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+
         }
 
         private void InitializeForm()
@@ -45,114 +46,57 @@ namespace Products
             Controls.Add(editButton);
             Controls.Add(deleteButton);
             Controls.Add(createButton);
+
+            if (currentUserRight != null)
+            {
+                if (currentUserRight.Rd == 0)
+                {
+                    dataGridView1.Visible = false;
+                }
+
+                if (currentUserRight.Write == 0)
+                {
+                    createButton.Visible = false;
+                }
+
+                if (currentUserRight.Edit == 0)
+                {
+                    editButton.Visible = false;
+                }
+
+                if (currentUserRight.Del == 0)
+                {
+                    deleteButton.Visible = false;
+                }
+            }
         }
+
 
         private void LoadProducts()
         {
             var products = _context.Products
-                .Include(p => p.IdCategoryNavigation)
-                .Include(p => p.IdSellersNavigation)
-                .Include(p => p.IdStoragesNavigation.IdAddressNavigation.CityNavigation)
-                .Include(p => p.IdStoragesNavigation.IdAddressNavigation.StreetNavigation)
+                .Select(p => new
+                {
+                    p.IdProducts,
+                    p.Name,
+                    p.Description,
+                    Picture = ResizeImageFromByteArray(p.Picture, new Size(100, 100)),
+                    p.Cost,
+                    p.Status,
+                    CategoryName = p.IdCategoryNavigation.Name,
+                    Seller = p.IdSellersNavigation.Name,
+                    Storage = $"{p.IdStoragesNavigation.IdAddressNavigation.CityNavigation.CityName}, " +
+                    $"{p.IdStoragesNavigation.IdAddressNavigation.StreetNavigation.StreetName}, " +
+                    $"{p.IdStoragesNavigation.IdAddressNavigation.HomeNumber}"
+                })
                 .ToList();
 
             bindingSource.DataSource = products;
 
-            LoadDataGrid();
+            //LoadDataGrid();
         }
 
-        public void LoadDataGrid()
-        {
-            dataGridView1.AutoGenerateColumns = false;
 
-            dataGridView1.Columns.Clear();
-
-            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "IdProducts",
-                HeaderText = "idProducts",
-                Width = 50
-            });
-
-            // Столбец Name
-            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Name",
-                HeaderText = "Name",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
-            });
-
-            // Столбец Description
-            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Description",
-                HeaderText = "Description",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
-            });
-
-            // Столбец Picture
-            DataGridViewImageColumn imageColumn = new DataGridViewImageColumn
-            {
-                DataPropertyName = "Picture",
-                HeaderText = "Picture",
-                Width = 100,
-                ImageLayout = DataGridViewImageCellLayout.Zoom
-            };
-            dataGridView1.Columns.Add(imageColumn);
-
-            // Столбец Cost
-            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Cost",
-                HeaderText = "Cost",
-                Width = 70
-            });
-
-            // Столбец Status
-            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "Status",
-                HeaderText = "Status",
-                Width = 70
-            });
-
-            // Столбец Category
-            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "IdCategoryNavigation.Name",
-                HeaderText = "Category",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
-            });
-
-            // Столбец Seller
-            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "IdSellersNavigation.Name",
-                HeaderText = "Seller",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
-            });
-
-            // Столбец Address
-            dataGridView1.Columns.Add(new DataGridViewTextBoxColumn
-            {
-                DataPropertyName = "AddressString",
-                HeaderText = "Address",
-                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
-            });
-
-            // Настройка высоты строк по высоте изображения
-            dataGridView1.RowTemplate.Height = 100; // Высота строки
-
-            foreach (DataGridViewRow row in dataGridView1.Rows)
-            {
-                var product = (Product)row.DataBoundItem;
-                if (product != null && product.Picture != null && product.Picture.Length > 0)
-                {
-                    row.Height = 100; // Высота строки
-                }
-            }
-
-        }
 
         private void EditButton_Click(object sender, EventArgs e)
         {
@@ -160,12 +104,15 @@ namespace Products
             {
                 if (dataGridView1.SelectedRows.Count > 0)
                 {
-                    var selectedProduct = (Product)dataGridView1.SelectedRows[0].DataBoundItem;
+                    var selectedProductId = (int)dataGridView1.SelectedRows[0].Cells["idProducts"].Value;
+
+                    var selectedProduct = _context.Products.Find(selectedProductId);
                     var editForm = new EditProductForm(selectedProduct);
                     editForm.ShowDialog();
                     LoadProducts();
                 }
-            } catch (ArgumentNullException ex)
+            }
+            catch (ArgumentNullException ex)
             {
                 MessageBox.Show(ex.Message);
             }
@@ -213,6 +160,28 @@ namespace Products
             var createForm = new InsertProductForm();
             createForm.ShowDialog();
             LoadProducts();
+        }
+
+        private void dataGridView1_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+
+        }
+        private static Image ResizeImageFromByteArray(byte[] imageData, Size size)
+        {
+            if (imageData == null || imageData.Length == 0)
+                return null;
+
+            using (MemoryStream ms = new MemoryStream(imageData))
+            {
+                Image img = Image.FromStream(ms);
+                return new Bitmap(img, size);
+            }
+        }
+
+        public static void ShowForm(DB.Right rights)
+        {
+            ProductManagementForm form = new(rights);
+            form.Show();
         }
     }
 }

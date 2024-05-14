@@ -1,15 +1,12 @@
 ﻿using DB;
-using MenuItemConstruction;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Products
@@ -33,11 +30,12 @@ namespace Products
 
         public InsertProductForm()
         {
-            
+
             _context = new();
             InitializeDynamicControls();
             this.AutoSize = true;
             this.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            LoadComboBoxes();
         }
 
         protected void LoadComboBoxes()
@@ -73,7 +71,7 @@ namespace Products
             var sellerLabel = new Label { Text = "Seller:", Location = new Point(10, 370) };
             var storageLabel = new Label { Text = "Storage:", Location = new Point(10, 420) };
 
-            
+
 
             // Добавление элементов управления и меток на форму
             Controls.Add(selectImageButton);
@@ -105,15 +103,20 @@ namespace Products
 
         private void LoadStatus()
         {
-            var statuses = new List<string> {"in stock", "on the way", "sold" };
+            var statuses = new List<string> { "in stock", "on the way", "sold" };
             statusComboBox.DataSource = statuses;
-            
+            statusComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+
+
+
         }
         private void LoadCategories()
         {
             var categories = _context.Categories.ToList();
             categoryComboBox.DataSource = categories;
-            categoryComboBox.DisplayMember = "name"; 
+            categoryComboBox.DisplayMember = "name";
+            categoryComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+
         }
 
         private void LoadSellers()
@@ -121,6 +124,8 @@ namespace Products
             var sellers = _context.Sellers.ToList();
             sellerComboBox.DataSource = sellers;
             sellerComboBox.DisplayMember = "name"; // Замените на имя свойства в вашем классе Seller
+            sellerComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+
         }
 
         private void LoadStorages()
@@ -143,6 +148,8 @@ namespace Products
             storageComboBox.DisplayMember = "AddressString";
             storageComboBox.ValueMember = "Id";
             storageComboBox.DataSource = storageDisplayItems;
+            storageComboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+
         }
 
         protected void addButton_Click(object sender, EventArgs e)
@@ -169,9 +176,10 @@ namespace Products
                     MessageBox.Show("Товар успешно добавлен");
                     ClearForm();
                 }
-            } catch
+            }
+            catch
             {
-                MessageBox.Show("Ошибка при добавлении товара");
+                MessageBox.Show("Ошибка при добавлении товара. Проверьте корректность введенных данных");
             }
         }
 
@@ -188,7 +196,7 @@ namespace Products
             }
         }
 
-            private bool IsValidInput()
+        private bool IsValidInput()
         {
             bool isValid = true;
             errorProvider.Clear();
@@ -216,25 +224,17 @@ namespace Products
 
         protected byte[] ConvertImageToByteArray(Image image)
         {
-            try
+            if (image == null)
             {
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    image.Save(ms, image.RawFormat);
-                    return ms.ToArray();
-                }
+                throw new ArgumentNullException("image");
             }
-            catch (System.NullReferenceException)
+
+            using (MemoryStream ms = new MemoryStream())
             {
-                // Обработка null-значения
-                return null;
+                image.Save(ms, ImageFormat.Jpeg);
+                return ms.ToArray();
             }
-            catch (Exception ex)
-            {
-                // Обработка других исключений
-                Console.WriteLine($"An error occurred: {ex.Message}");
-                return null;
-            }
+
         }
 
         private void ClearForm()

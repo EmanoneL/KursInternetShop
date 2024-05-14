@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace DB;
 
-namespace DB;
-
-public partial class CartsHasProsuct
+public partial class CartsHasProsucts
 {
     public int IdCarts { get; set; }
 

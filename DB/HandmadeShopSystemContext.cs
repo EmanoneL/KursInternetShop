@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace DB;
 
@@ -21,7 +19,7 @@ public partial class HandmadeShopSystemContext : DbContext
 
     public virtual DbSet<Cart> Carts { get; set; }
 
-    public virtual DbSet<CartsHasProsuct> CartsHasProsucts { get; set; }
+    public virtual DbSet<CartsHasProsucts> CartsHasProsucts { get; set; }
 
     public virtual DbSet<Category> Categories { get; set; }
 
@@ -50,7 +48,7 @@ public partial class HandmadeShopSystemContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlite("Data Source=C:\\\\\\\\Users\\\\\\\\Ekaterina\\\\\\\\source\\\\\\\\repos\\\\\\\\KursInternetShop\\\\\\\\DB\\\\\\\\bin\\\\\\\\Debug\\\\\\\\net5.0\\\\\\\\handmade shop system.db");
+        => optionsBuilder.UseSqlite("Data Source=handmade shop system.db");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -107,20 +105,31 @@ public partial class HandmadeShopSystemContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
-        modelBuilder.Entity<CartsHasProsuct>(entity =>
+        modelBuilder.Entity<CartsHasProsucts>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("Carts_has_prosucts");
+            //entity
+            //    .HasNoKey()
+            //    .ToTable("Carts_has_prosucts");
 
-            entity.Property(e => e.IdCarts).HasColumnName("idCarts");
-            entity.Property(e => e.IdProducts).HasColumnName("idProducts");
+            //entity.Property(e => e.IdCarts).HasColumnName("idCarts");
+            //entity.Property(e => e.IdProducts).HasColumnName("idProducts");
 
-            entity.HasOne(d => d.IdCartsNavigation).WithMany()
+            //entity.HasOne(d => d.IdCartsNavigation).WithMany()
+            //    .HasForeignKey(d => d.IdCarts)
+            //    .OnDelete(DeleteBehavior.ClientSetNull);
+
+            //entity.HasOne(d => d.IdProductsNavigation).WithMany()
+            //    .HasForeignKey(d => d.IdProducts)
+            //    .OnDelete(DeleteBehavior.Cascade);
+            entity.HasKey(e => new { e.IdCarts, e.IdProducts });
+
+            entity.HasOne(d => d.IdCartsNavigation)
+                .WithMany(p => p.CartsHasProducts)
                 .HasForeignKey(d => d.IdCarts)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(d => d.IdProductsNavigation).WithMany()
+            entity.HasOne(d => d.IdProductsNavigation)
+                .WithMany(p => p.CartsHasProducts)
                 .HasForeignKey(d => d.IdProducts)
                 .OnDelete(DeleteBehavior.Cascade);
         });
@@ -201,7 +210,8 @@ public partial class HandmadeShopSystemContext : DbContext
                 .IsRequired()
                 .HasColumnName("password");
             entity.Property(e => e.PhoneNumber).HasColumnName("phone number");
-            entity.Property(e => e.Status).HasColumnName("status");
+
+
 
             entity.HasOne(d => d.IdAddressNavigation).WithMany(p => p.Customers)
                 .HasForeignKey(d => d.IdAddress)
@@ -251,7 +261,7 @@ public partial class HandmadeShopSystemContext : DbContext
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasNoKey();
+            entity.HasKey(e => e.IdOrders);
 
             entity.Property(e => e.IdAddress).HasColumnName("idAddress");
             entity.Property(e => e.IdCustomer).HasColumnName("idCustomer");
@@ -313,6 +323,10 @@ public partial class HandmadeShopSystemContext : DbContext
             entity.HasOne(d => d.IdStoragesNavigation).WithMany(p => p.Products)
                 .HasForeignKey(d => d.IdStorages)
                 .OnDelete(DeleteBehavior.ClientSetNull);
+
+            entity.HasMany(c => c.Carts)
+                  .WithMany(s => s.Products)
+                  .UsingEntity(j => j.ToTable("Carts_has_prosucts"));
         });
 
         modelBuilder.Entity<Right>(entity =>
@@ -385,7 +399,7 @@ public partial class HandmadeShopSystemContext : DbContext
 
             entity.HasOne(d => d.IdAddressNavigation).WithMany(p => p.Storages)
                 .HasForeignKey(d => d.IdAddress)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Street>(entity =>
